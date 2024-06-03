@@ -10,8 +10,8 @@ import android.os.Build
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 
-class ChargerStateService : Service() {
-    private val receiver: ChargerStateReceiver = ChargerStateReceiver()
+class PowerNotifierService : Service() {
+    private val receiver: PowerNotifierReceiver = PowerNotifierReceiver()
 
     override fun onCreate() {
         super.onCreate()

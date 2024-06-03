@@ -17,7 +17,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         val serviceIntent = Intent(
             applicationContext,
-            ChargerStateService::class.java
+            PowerNotifierService::class.java
         )
         ContextCompat.startForegroundService(this, serviceIntent)
         sharedPref = getSharedPreferences(
