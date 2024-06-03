@@ -57,6 +57,21 @@ class MainActivity : Activity() {
         // urlEditText.setText(prefs.getString("url", ""))
         telegramBotTokenEditText.setText(prefs.getString("telegram_bot_token", ""))
         telegramChatIdEditText.setText(prefs.getString("telegram_chat_id", ""))
+
+        if (prefs.getString("on_message_text", "").isNullOrEmpty()) {
+            with(prefs.edit()) {
+                putString("on_message_text", getString(R.string.default_on_message))
+                apply()
+            }
+        }
+
+        if (prefs.getString("off_message_text", "").isNullOrEmpty()) {
+            with(prefs.edit()) {
+                putString("off_message_text", getString(R.string.default_off_message))
+                apply()
+            }
+        }
+
         onMessageEditText.setText(
             prefs.getString(
                 "on_message_text",

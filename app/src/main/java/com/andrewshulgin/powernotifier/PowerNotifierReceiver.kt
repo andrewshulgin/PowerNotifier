@@ -49,7 +49,7 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                     apply()
                 }
                 val message =
-                    prefs.getString((if (isConnected) "on_message" else "off_message"), "")
+                    prefs.getString((if (isConnected) "on_message_text" else "off_message_text"), "")
                 sendChargerState(
                     "https://api.telegram.org/bot$telegramBotToken/sendMessage?chat_id=$telegramChatId&text=${
                         URLEncoder.encode(
