@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Power Notifier</string>
+    <string name="power_state">Power State</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="telegram_bot_token">Telegram Bot Token</string>
+    <string name="telegram_chat_id">Telegram Chat ID</string>
+    <string name="url">URL</string>
+    <string name="enable">Enable</string>
+    <string name="preference_file_key">io.hex128.powernotifier.preferences</string>
+</resources>
