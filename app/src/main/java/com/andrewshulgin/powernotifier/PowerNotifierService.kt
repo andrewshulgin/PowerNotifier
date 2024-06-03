@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
@@ -48,6 +49,7 @@ class PowerNotifierService : Service() {
             .setContentTitle("Charger State Service")
             .setContentText("Monitoring charger state")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_launcher_foreground))
             .build()
     }
 
