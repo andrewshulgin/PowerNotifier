@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Power Notifier</string>
+    <string name="app_name" translatable="false">Power Notifier</string>
     <string name="persistent_notification_title">Charger State Service</string>
     <string name="persistent_notification_text">Monitoring charger state</string>
-    <string name="persistent_notification_channel">charger_state_service</string>
+    <string name="persistent_notification_channel" translatable="false">charger_state_service</string>
     <string name="power_state">Power State</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
@@ -10,10 +10,10 @@
     <string name="telegram_chat_id">Telegram Chat ID</string>
     <string name="on_message">Power ON Message</string>
     <string name="off_message">Power OFF Message</string>
-    <string name="url">URL</string>
+    <string name="url" translatable="false">URL</string>
     <string name="enable">Enable</string>
     <string name="insecure">Disable certificate verification</string>
-    <string name="preference_file_key">io.hex128.powernotifier.preferences</string>
+    <string name="preference_file_key" translatable="false">io.hex128.powernotifier.preferences</string>
     <string name="default_on_message">⚡️ Connected</string>
     <string name="default_off_message">🚫 Disconnected</string>
 </resources>

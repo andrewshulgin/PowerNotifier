@@ -11,8 +11,8 @@ android {
         applicationId = "io.hex128.powernotifier"
         minSdk = 14
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 202406040
+        versionName = "0.0.1"
     }
 
     buildTypes {
