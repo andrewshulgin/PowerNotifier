@@ -34,11 +34,13 @@ class PowerNotifierService : Service() {
     }
 
     private fun createNotification(): Notification {
-        val channelId = "charger_state_service"
+        val channelId = getString(R.string.persistent_notification_channel)
+        val title = getString(R.string.persistent_notification_title)
+        val text = getString(R.string.persistent_notification_text)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Charger State Service",
+                title,
                 NotificationManager.IMPORTANCE_LOW
             )
             (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
@@ -46,8 +48,8 @@ class PowerNotifierService : Service() {
         }
 
         return NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Charger State Service")
-            .setContentText("Monitoring charger state")
+            .setContentTitle(title)
+            .setContentText(text)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_launcher_foreground))
             .build()

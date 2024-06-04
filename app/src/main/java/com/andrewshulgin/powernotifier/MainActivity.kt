@@ -12,6 +12,15 @@ import android.widget.Switch
 
 
 class MainActivity : Activity() {
+    data class UiState(
+        val enableSwitchChecked: Boolean,
+        val insecureSwitchChecked: Boolean,
+        val telegramBotToken: String?,
+        val telegramChatId: String?,
+        val onMessageText: String?,
+        val offMessageText: String?
+    )
+
     private val serviceIntent by lazy {
         Intent(applicationContext, PowerNotifierService::class.java)
     }
@@ -26,15 +35,32 @@ class MainActivity : Activity() {
 
         val enableSwitch = findViewById<Switch>(R.id.enableSwitch)
         val insecureSwitch = findViewById<Switch>(R.id.insecureSwitch)
-
-        // val urlEditText = findViewById<EditText>(R.id.urlEditText)
         val telegramBotTokenEditText = findViewById<EditText>(R.id.telegramBotTokenEditText)
         val telegramChatIdEditText = findViewById<EditText>(R.id.telegramChatIdEditText)
         val onMessageEditText = findViewById<EditText>(R.id.onMessageEditText)
         val offMessageEditText = findViewById<EditText>(R.id.offMessageEditText)
 
-        enableSwitch.isChecked = prefs.getBoolean("enabled", false)
-        insecureSwitch.isChecked = prefs.getBoolean("insecure", false)
+        val uiState = UiState(
+            prefs.getBoolean(PowerNotifierReceiver.PREF_ENABLED, false),
+            prefs.getBoolean(PowerNotifierReceiver.PREF_INSECURE, false),
+            prefs.getString(PowerNotifierReceiver.PREF_TELEGRAM_BOT_TOKEN, ""),
+            prefs.getString(PowerNotifierReceiver.PREF_TELEGRAM_CHAT_ID, ""),
+            prefs.getString(
+                PowerNotifierReceiver.PREF_ON_MESSAGE_TEXT,
+                getString(R.string.default_on_message)
+            ),
+            prefs.getString(
+                PowerNotifierReceiver.PREF_OFF_MESSAGE_TEXT,
+                getString(R.string.default_off_message)
+            )
+        )
+
+        enableSwitch.isChecked = uiState.enableSwitchChecked
+        insecureSwitch.isChecked = uiState.insecureSwitchChecked
+        telegramBotTokenEditText.setText(uiState.telegramBotToken)
+        telegramChatIdEditText.setText(uiState.telegramChatId)
+        onMessageEditText.setText(uiState.onMessageText)
+        offMessageEditText.setText(uiState.offMessageText)
 
         enableSwitch.setOnCheckedChangeListener { _, isChecked ->
             with(prefs.edit()) {
@@ -43,50 +69,19 @@ class MainActivity : Activity() {
                 } else {
                     stopService(serviceIntent)
                 }
-                putBoolean("enabled", isChecked)
+                putBoolean(PowerNotifierReceiver.PREF_ENABLED, isChecked)
                 apply()
             }
         }
+
         insecureSwitch.setOnCheckedChangeListener { _, isChecked ->
             with(prefs.edit()) {
-                putBoolean("insecure", isChecked)
+                putBoolean(PowerNotifierReceiver.PREF_INSECURE, isChecked)
                 apply()
             }
         }
-
-        // urlEditText.setText(prefs.getString("url", ""))
-        telegramBotTokenEditText.setText(prefs.getString("telegram_bot_token", ""))
-        telegramChatIdEditText.setText(prefs.getString("telegram_chat_id", ""))
-
-        if (prefs.getString("on_message_text", "").isNullOrEmpty()) {
-            with(prefs.edit()) {
-                putString("on_message_text", getString(R.string.default_on_message))
-                apply()
-            }
-        }
-
-        if (prefs.getString("off_message_text", "").isNullOrEmpty()) {
-            with(prefs.edit()) {
-                putString("off_message_text", getString(R.string.default_off_message))
-                apply()
-            }
-        }
-
-        onMessageEditText.setText(
-            prefs.getString(
-                "on_message_text",
-                getString(R.string.default_on_message)
-            )
-        )
-        offMessageEditText.setText(
-            prefs.getString(
-                "off_message_text",
-                getString(R.string.default_off_message)
-            )
-        )
 
         arrayOf(
-            // urlEditText,
             telegramBotTokenEditText,
             telegramChatIdEditText,
             onMessageEditText,
@@ -111,11 +106,10 @@ class MainActivity : Activity() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
             editText.tag = when (editText.id) {
-                // R.id.urlEditText -> "url"
-                R.id.telegramBotTokenEditText -> "telegram_bot_token"
-                R.id.telegramChatIdEditText -> "telegram_chat_id"
-                R.id.onMessageEditText -> "on_message_text"
-                R.id.offMessageEditText -> "off_message_text"
+                R.id.telegramBotTokenEditText -> PowerNotifierReceiver.PREF_TELEGRAM_BOT_TOKEN
+                R.id.telegramChatIdEditText -> PowerNotifierReceiver.PREF_TELEGRAM_CHAT_ID
+                R.id.onMessageEditText -> PowerNotifierReceiver.PREF_ON_MESSAGE_TEXT
+                R.id.offMessageEditText -> PowerNotifierReceiver.PREF_OFF_MESSAGE_TEXT
                 else -> throw IllegalArgumentException("Invalid EditText ID")
             }
         }

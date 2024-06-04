@@ -2,14 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="10dp">
 
     <EditText
         android:id="@+id/telegramBotTokenEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:minHeight="48dp"
         android:hint="@string/telegram_bot_token"
+        android:importantForAutofill="no"
         android:inputType="textPassword" />
 
     <EditText
@@ -17,7 +20,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:minHeight="48dp"
         android:hint="@string/telegram_chat_id"
+        android:importantForAutofill="no"
         android:inputType="text" />
 
     <EditText
@@ -25,7 +30,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:minHeight="48dp"
         android:hint="@string/on_message"
+        android:importantForAutofill="no"
         android:inputType="text" />
 
     <EditText
@@ -33,26 +40,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
+        android:minHeight="48dp"
         android:hint="@string/off_message"
+        android:importantForAutofill="no"
         android:inputType="text" />
-
-    <!--    <EditText-->
-    <!--        android:id="@+id/urlEditText"-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:ems="10"-->
-    <!--        android:hint="@string/url"-->
-    <!--        android:inputType="textUri" />-->
 
     <Switch
         android:id="@+id/enableSwitch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:text="@string/enable" />
 
     <Switch
         android:id="@+id/insecureSwitch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:text="@string/insecure" />
 </LinearLayout>

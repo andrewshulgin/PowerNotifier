@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Power Notifier</string>
+    <string name="persistent_notification_title">Charger State Service</string>
+    <string name="persistent_notification_text">Monitoring charger state</string>
+    <string name="persistent_notification_channel">charger_state_service</string>
     <string name="power_state">Power State</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>

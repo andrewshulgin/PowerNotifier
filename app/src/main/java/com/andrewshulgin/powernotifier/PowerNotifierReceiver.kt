@@ -1,6 +1,5 @@
 package io.hex128.powernotifier
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -13,23 +12,18 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
 import java.net.URLEncoder
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 class PowerNotifierReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val prefs = context.getSharedPreferences(
             context.getString(R.string.preference_file_key), Activity.MODE_PRIVATE
         )
-        val enabled = prefs.getBoolean("enabled", false)
-        val insecure = prefs.getBoolean("insecure", false)
-        val telegramBotToken = prefs.getString("telegram_bot_token", "")
-        val telegramChatId = prefs.getString("telegram_chat_id", "")
+        val enabled = prefs.getBoolean(PREF_ENABLED, false)
+        val insecure = prefs.getBoolean(PREF_INSECURE, false)
+        val telegramBotToken = prefs.getString(PREF_TELEGRAM_BOT_TOKEN, "")
+        val telegramChatId = prefs.getString(PREF_TELEGRAM_CHAT_ID, "")
         if (intent.action == Intent.ACTION_BOOT_COMPLETED && enabled) {
             val serviceIntent = Intent(
                 context,
@@ -38,27 +32,36 @@ class PowerNotifierReceiver : BroadcastReceiver() {
             ContextCompat.startForegroundService(context, serviceIntent)
         }
         if (intent.action == Intent.ACTION_BATTERY_CHANGED && enabled) {
-            val isConnected = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1) > 0
-            if (!prefs.contains("was_connected") || prefs.getBoolean(
-                    "was_connected",
-                    false
-                ) != isConnected
-            ) {
-                with(prefs!!.edit()) {
-                    putBoolean("was_connected", isConnected)
-                    apply()
-                }
-                val message =
-                    prefs.getString((if (isConnected) "on_message_text" else "off_message_text"), "")
-                sendChargerState(
-                    "https://api.telegram.org/bot$telegramBotToken/sendMessage?chat_id=$telegramChatId&text=${
-                        URLEncoder.encode(
-                            message,
-                            "UTF-8"
+            val isConnected = intent.getIntExtra(
+                BatteryManager.EXTRA_PLUGGED, -1
+            ) > 0
+            if (prefs.contains(PREF_WAS_CONNECTED)) {
+                if (prefs.getBoolean(PREF_WAS_CONNECTED, false) != isConnected) {
+                    val message = if (isConnected) {
+                        prefs.getString(
+                            PREF_ON_MESSAGE_TEXT,
+                            context.getString(R.string.default_on_message)
                         )
-                    }",
-                    insecure
-                )
+                    } else {
+                        prefs.getString(
+                            PREF_OFF_MESSAGE_TEXT,
+                            context.getString(R.string.default_off_message)
+                        )
+                    }
+                    sendChargerState(
+                        "https://api.telegram.org/bot$telegramBotToken/sendMessage?chat_id=$telegramChatId&text=${
+                            URLEncoder.encode(
+                                message,
+                                "UTF-8"
+                            )
+                        }",
+                        insecure
+                    )
+                }
+            }
+            with(prefs.edit()) {
+                putBoolean(PREF_WAS_CONNECTED, isConnected)
+                apply()
             }
         }
     }
@@ -69,27 +72,7 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                 val client = URL(url).openConnection() as HttpsURLConnection
                 client.connectTimeout = TimeUnit.SECONDS.toMillis(10).toInt()
                 client.readTimeout = TimeUnit.SECONDS.toMillis(10).toInt()
-                if (insecure) {
-                    client.sslSocketFactory = SSLContext.getInstance("SSL").apply {
-                        init(null, arrayOf<TrustManager>(
-                            @SuppressLint("CustomX509TrustManager")
-                            object : X509TrustManager {
-                                override fun getAcceptedIssuers(): Array<X509Certificate>? = null
-
-                                override fun checkClientTrusted(
-                                    chain: Array<X509Certificate>,
-                                    authType: String
-                                ) = Unit
-
-                                override fun checkServerTrusted(
-                                    chain: Array<X509Certificate>,
-                                    authType: String
-                                ) = Unit
-                            }), java.security.SecureRandom()
-                        )
-                    }.socketFactory
-                    client.hostnameVerifier = HostnameVerifier { _, _ -> true }
-                }
+                client.sslSocketFactory = TLSv12SocketFactory(insecure)
                 client.requestMethod = "GET"
                 client.connect()
                 val reader = BufferedReader(InputStreamReader(client.inputStream))
@@ -100,5 +83,15 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                 e.printStackTrace()
             }
         }.start()
+    }
+
+    companion object {
+        const val PREF_INSECURE = "insecure"
+        const val PREF_ENABLED = "enabled"
+        const val PREF_TELEGRAM_BOT_TOKEN = "telegram_bot_token"
+        const val PREF_TELEGRAM_CHAT_ID = "telegram_chat_id"
+        const val PREF_WAS_CONNECTED = "was_connected"
+        const val PREF_ON_MESSAGE_TEXT = "on_message_text"
+        const val PREF_OFF_MESSAGE_TEXT = "off_message_text"
     }
 }
