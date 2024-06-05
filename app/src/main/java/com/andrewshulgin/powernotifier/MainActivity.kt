@@ -9,6 +9,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.EditText
 import android.widget.Switch
+import android.widget.TextView
 
 
 class MainActivity : Activity() {
@@ -18,7 +19,8 @@ class MainActivity : Activity() {
         val telegramBotToken: String?,
         val telegramChatId: String?,
         val onMessageText: String?,
-        val offMessageText: String?
+        val offMessageText: String?,
+        val lastResponse: String?
     )
 
     private val serviceIntent by lazy {
@@ -28,6 +30,14 @@ class MainActivity : Activity() {
     private val prefs: SharedPreferences by lazy {
         getSharedPreferences(getString(R.string.preference_file_key), MODE_PRIVATE)
     }
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == PowerNotifierReceiver.PREF_LAST_RESPONSE) {
+            lastResponseTextView?.text = prefs.getString(key, "")
+        }
+    }
+
+    private var lastResponseTextView: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +49,7 @@ class MainActivity : Activity() {
         val telegramChatIdEditText = findViewById<EditText>(R.id.telegramChatIdEditText)
         val onMessageEditText = findViewById<EditText>(R.id.onMessageEditText)
         val offMessageEditText = findViewById<EditText>(R.id.offMessageEditText)
+        lastResponseTextView = findViewById(R.id.lastResponse)
 
         val uiState = UiState(
             prefs.getBoolean(PowerNotifierReceiver.PREF_ENABLED, false),
@@ -52,7 +63,8 @@ class MainActivity : Activity() {
             prefs.getString(
                 PowerNotifierReceiver.PREF_OFF_MESSAGE_TEXT,
                 getString(R.string.default_off_message)
-            )
+            ),
+            prefs.getString(PowerNotifierReceiver.PREF_LAST_RESPONSE, "")
         )
 
         enableSwitch.isChecked = uiState.enableSwitchChecked
@@ -61,6 +73,9 @@ class MainActivity : Activity() {
         telegramChatIdEditText.setText(uiState.telegramChatId)
         onMessageEditText.setText(uiState.onMessageText)
         offMessageEditText.setText(uiState.offMessageText)
+        lastResponseTextView?.text = uiState.lastResponse
+
+        prefs.registerOnSharedPreferenceChangeListener(listener)
 
         enableSwitch.setOnCheckedChangeListener { _, isChecked ->
             with(prefs.edit()) {
@@ -68,6 +83,7 @@ class MainActivity : Activity() {
                     ContextCompat.startForegroundService(this@MainActivity, serviceIntent)
                 } else {
                     stopService(serviceIntent)
+                    remove(PowerNotifierReceiver.PREF_WAS_CONNECTED)
                 }
                 putBoolean(PowerNotifierReceiver.PREF_ENABLED, isChecked)
                 apply()
@@ -75,10 +91,7 @@ class MainActivity : Activity() {
         }
 
         insecureSwitch.setOnCheckedChangeListener { _, isChecked ->
-            with(prefs.edit()) {
-                putBoolean(PowerNotifierReceiver.PREF_INSECURE, isChecked)
-                apply()
-            }
+            prefs.edit().putBoolean(PowerNotifierReceiver.PREF_INSECURE, isChecked).apply()
         }
 
         arrayOf(
@@ -89,10 +102,7 @@ class MainActivity : Activity() {
         ).forEach { editText ->
             editText.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable) {
-                    with(prefs.edit()) {
-                        putString(editText.tag.toString(), s.toString())
-                        apply()
-                    }
+                    prefs.edit().putString(editText.tag.toString(), s.toString()).apply()
                 }
 
                 override fun beforeTextChanged(
@@ -117,5 +127,16 @@ class MainActivity : Activity() {
         if (enableSwitch.isChecked) {
             ContextCompat.startForegroundService(this, serviceIntent)
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lastResponseTextView?.text = prefs.getString(PowerNotifierReceiver.PREF_LAST_RESPONSE, "")
+        prefs.registerOnSharedPreferenceChangeListener(listener)
     }
 }

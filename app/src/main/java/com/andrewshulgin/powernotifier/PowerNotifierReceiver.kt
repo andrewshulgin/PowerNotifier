@@ -4,18 +4,27 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.BatteryManager
 import android.support.v4.content.ContextCompat
 import android.util.Log
+import org.json.JSONException
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
+import java.io.InputStream
+import java.io.InterruptedIOException
 import java.net.URL
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
+import kotlin.math.pow
+import kotlin.math.roundToLong
+
 
 class PowerNotifierReceiver : BroadcastReceiver() {
+    private var thread: Thread? = null
+
     override fun onReceive(context: Context, intent: Intent) {
         val prefs = context.getSharedPreferences(
             context.getString(R.string.preference_file_key), Activity.MODE_PRIVATE
@@ -55,37 +64,84 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                                 "UTF-8"
                             )
                         }",
-                        insecure
+                        insecure,
+                        prefs
                     )
                 }
             }
-            with(prefs.edit()) {
-                putBoolean(PREF_WAS_CONNECTED, isConnected)
-                apply()
-            }
+            prefs.edit().putBoolean(PREF_WAS_CONNECTED, isConnected).apply()
         }
     }
 
-    private fun sendChargerState(url: String, insecure: Boolean) {
-        Thread {
-            try {
+    @Synchronized
+    private fun sendChargerState(url: String, insecure: Boolean, prefs: SharedPreferences) {
+        if (thread != null) {
+            Log.d(TAG, "Cancelling previous thread")
+            thread?.interrupt()
+        }
+        thread = Thread {
+            var delay: Double
+            var attempt = 0
+            while (prefs.getBoolean(PREF_ENABLED, false)) {
+                attempt++
+                if (Thread.interrupted()) {
+                    return@Thread
+                }
                 val client = URL(url).openConnection() as HttpsURLConnection
-                client.connectTimeout = TimeUnit.SECONDS.toMillis(10).toInt()
-                client.readTimeout = TimeUnit.SECONDS.toMillis(10).toInt()
-                client.sslSocketFactory = TLSv12SocketFactory(insecure)
-                client.requestMethod = "GET"
-                client.connect()
-                val reader = BufferedReader(InputStreamReader(client.inputStream))
-                val responseBody: String = reader.readText()
-                Log.d("ChargerStateReceiver", "Response: $responseBody")
-                client.disconnect()
-            } catch (e: IOException) {
-                e.printStackTrace()
+                try {
+                    client.defaultUseCaches = false
+                    client.useCaches = false
+                    client.setRequestProperty("Connection", "close")
+                    client.connectTimeout = TimeUnit.SECONDS.toMillis(10).toInt()
+                    client.readTimeout = TimeUnit.SECONDS.toMillis(10).toInt()
+                    client.sslSocketFactory = TLSv12SocketFactory(insecure)
+                    client.requestMethod = "GET"
+                    client.connect()
+                    var inputStream: InputStream? = client.errorStream
+                    if (inputStream == null) {
+                        inputStream = client.inputStream
+                    }
+                    val reader = BufferedReader(inputStream?.reader())
+                    var responseBody: String = reader.readText()
+                    Log.d(TAG, "Response: ${client.responseCode} $responseBody")
+                    try {
+                        responseBody = JSONObject(responseBody).toString(2)
+                    } catch (_: JSONException) {
+                    }
+                    prefs.edit().putString(
+                        PREF_LAST_RESPONSE,
+                        "${client.responseCode} ${client.responseMessage}\n$responseBody"
+                    ).apply()
+                    thread = null
+                    break
+                } catch (e: IOException) {
+                    delay = (INITIAL_RETRY_DELAY * 2.0.pow(attempt - 1))
+                        .coerceAtMost(MAX_RETRY_DELAY)
+                    Log.d(
+                        TAG,
+                        "Got an exception trying to send a request (attempt $attempt): ${e.message}. Retrying in ${delay.roundToLong()} ms",
+                        e
+                    )
+                    prefs.edit().putString(PREF_LAST_RESPONSE, e.stackTraceToString()).apply()
+                    try {
+                        Thread.sleep(delay.roundToLong())
+                    } catch (ie: InterruptedException) {
+                        Log.d(TAG, "Retry interrupted")
+                        return@Thread
+                    }
+                } catch (_: InterruptedIOException) {
+                } finally {
+                    client.disconnect()
+                }
             }
-        }.start()
+        }
+        thread?.start()
     }
 
     companion object {
+        const val TAG = "PowerNotifier"
+        const val INITIAL_RETRY_DELAY = 1000.0
+        const val MAX_RETRY_DELAY = 32000.0
         const val PREF_INSECURE = "insecure"
         const val PREF_ENABLED = "enabled"
         const val PREF_TELEGRAM_BOT_TOKEN = "telegram_bot_token"
@@ -93,5 +149,6 @@ class PowerNotifierReceiver : BroadcastReceiver() {
         const val PREF_WAS_CONNECTED = "was_connected"
         const val PREF_ON_MESSAGE_TEXT = "on_message_text"
         const val PREF_OFF_MESSAGE_TEXT = "off_message_text"
+        const val PREF_LAST_RESPONSE = "last_response"
     }
 }

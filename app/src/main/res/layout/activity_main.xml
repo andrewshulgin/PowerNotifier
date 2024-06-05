@@ -10,40 +10,40 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:minHeight="48dp"
         android:hint="@string/telegram_bot_token"
         android:importantForAutofill="no"
-        android:inputType="textPassword" />
+        android:inputType="textPassword"
+        android:minHeight="48dp" />
 
     <EditText
         android:id="@+id/telegramChatIdEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:minHeight="48dp"
         android:hint="@string/telegram_chat_id"
         android:importantForAutofill="no"
-        android:inputType="text" />
+        android:inputType="text"
+        android:minHeight="48dp" />
 
     <EditText
         android:id="@+id/onMessageEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:minHeight="48dp"
         android:hint="@string/on_message"
         android:importantForAutofill="no"
-        android:inputType="text" />
+        android:inputType="text"
+        android:minHeight="48dp" />
 
     <EditText
         android:id="@+id/offMessageEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:minHeight="48dp"
         android:hint="@string/off_message"
         android:importantForAutofill="no"
-        android:inputType="text" />
+        android:inputType="text"
+        android:minHeight="48dp" />
 
     <Switch
         android:id="@+id/enableSwitch"
@@ -58,4 +58,13 @@
         android:layout_height="wrap_content"
         android:minHeight="48dp"
         android:text="@string/insecure" />
+
+    <TextView
+        android:id="@+id/lastResponse"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:selectAllOnFocus="true"
+        android:text=""
+        android:textIsSelectable="true"
+        android:typeface="monospace" />
 </LinearLayout>

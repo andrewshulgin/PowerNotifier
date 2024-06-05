@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="persistent_notification_title">Мониторинг питания</string>
+    <string name="persistent_notification_text">Отслеживается наличие внешнего питания</string>
+    <string name="power_state">Питание</string>
+    <string name="connected">Подключено</string>
+    <string name="disconnected">Отключено</string>
+    <string name="telegram_bot_token">Token Telegram Бота</string>
+    <string name="telegram_chat_id">ID диалога Telegram</string>
+    <string name="on_message">Сообщение о подключении</string>
+    <string name="off_message">Сообщение об отключении</string>
+    <string name="enable">Включено</string>
+    <string name="insecure">Отключть проверку сертификата</string>
+    <string name="default_on_message">⚡️ Питание подключено</string>
+    <string name="default_off_message">🚫 Питание отключено</string>
+</resources>
