@@ -13,4 +13,7 @@
     <string name="insecure">Отключть проверку сертификата</string>
     <string name="default_on_message">⚡️ Питание подключено</string>
     <string name="default_off_message">🚫 Питание отключено</string>
+    <string name="custom">PRO режим (Произвольные URL)</string>
+    <string name="custom_url_on">URL для включения</string>
+    <string name="custom_url_off">URL для отключения</string>
 </resources>

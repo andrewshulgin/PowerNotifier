@@ -13,4 +13,7 @@
     <string name="insecure">Вимкнути перевірку сертифікату</string>
     <string name="default_on_message">⚡️ Живлення відновлено</string>
     <string name="default_off_message">🚫 Живлення відсутнє</string>
+    <string name="custom">PRO режим (Довільні URL)</string>
+    <string name="custom_url_on">URL для увімкнення</string>
+    <string name="custom_url_off">URL для вимкнення</string>
 </resources>

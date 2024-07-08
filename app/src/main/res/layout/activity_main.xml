@@ -1,70 +1,120 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/telegramBotTokenEditText"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/telegram_bot_token"
-        android:importantForAutofill="no"
-        android:inputType="textPassword"
-        android:minHeight="48dp" />
+        android:orientation="vertical"
+        android:padding="10dp">
 
-    <EditText
-        android:id="@+id/telegramChatIdEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/telegram_chat_id"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:minHeight="48dp" />
+        <Switch
+            android:id="@+id/enableSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/enable" />
 
-    <EditText
-        android:id="@+id/onMessageEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/on_message"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:minHeight="48dp" />
+        <Switch
+            android:id="@+id/customSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/custom" />
 
-    <EditText
-        android:id="@+id/offMessageEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/off_message"
-        android:importantForAutofill="no"
-        android:inputType="text"
-        android:minHeight="48dp" />
+        <LinearLayout
+            android:id="@+id/telegramInputsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible">
 
-    <Switch
-        android:id="@+id/enableSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="@string/enable" />
+            <EditText
+                android:id="@+id/telegramBotTokenEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/telegram_bot_token"
+                android:importantForAutofill="no"
+                android:inputType="textPassword"
+                android:minHeight="48dp" />
 
-    <Switch
-        android:id="@+id/insecureSwitch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="48dp"
-        android:text="@string/insecure" />
+            <EditText
+                android:id="@+id/telegramChatIdEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/telegram_chat_id"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:minHeight="48dp" />
 
-    <TextView
-        android:id="@+id/lastResponse"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:selectAllOnFocus="true"
-        android:text=""
-        android:textIsSelectable="true"
-        android:typeface="monospace" />
-</LinearLayout>
+            <EditText
+                android:id="@+id/onMessageEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/on_message"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:minHeight="48dp" />
+
+            <EditText
+                android:id="@+id/offMessageEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/off_message"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:minHeight="48dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/customInputsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/customOnUrlEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/custom_url_on"
+                android:importantForAutofill="no"
+                android:inputType="textUri"
+                android:minHeight="48dp" />
+
+            <EditText
+                android:id="@+id/customOffUrlEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/custom_url_off"
+                android:importantForAutofill="no"
+                android:inputType="textUri"
+                android:minHeight="48dp" />
+
+        </LinearLayout>
+
+        <Switch
+            android:id="@+id/insecureSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/insecure" />
+
+        <TextView
+            android:id="@+id/lastResponse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:selectAllOnFocus="true"
+            android:text=""
+            android:textIsSelectable="true"
+            android:typeface="monospace" />
+    </LinearLayout>
+</ScrollView>

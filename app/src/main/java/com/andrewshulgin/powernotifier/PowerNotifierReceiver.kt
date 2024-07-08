@@ -31,6 +31,7 @@ class PowerNotifierReceiver : BroadcastReceiver() {
         )
         val enabled = prefs.getBoolean(PREF_ENABLED, false)
         val insecure = prefs.getBoolean(PREF_INSECURE, false)
+        val custom = prefs.getBoolean(PREF_CUSTOM, false)
         val telegramBotToken = prefs.getString(PREF_TELEGRAM_BOT_TOKEN, "")
         val telegramChatId = prefs.getString(PREF_TELEGRAM_CHAT_ID, "")
         if (intent.action == Intent.ACTION_BOOT_COMPLETED && enabled) {
@@ -46,27 +47,33 @@ class PowerNotifierReceiver : BroadcastReceiver() {
             ) > 0
             if (prefs.contains(PREF_WAS_CONNECTED)) {
                 if (prefs.getBoolean(PREF_WAS_CONNECTED, false) != isConnected) {
-                    val message = if (isConnected) {
+                    val url = if (custom) {
                         prefs.getString(
-                            PREF_ON_MESSAGE_TEXT,
-                            context.getString(R.string.default_on_message)
+                            if (isConnected) PREF_CUSTOM_URL_ON else PREF_CUSTOM_URL_OFF,
+                            ""
                         )
                     } else {
-                        prefs.getString(
-                            PREF_OFF_MESSAGE_TEXT,
-                            context.getString(R.string.default_off_message)
-                        )
-                    }
-                    sendChargerState(
+                        val message = if (isConnected) {
+                            prefs.getString(
+                                PREF_ON_MESSAGE_TEXT,
+                                context.getString(R.string.default_on_message)
+                            )
+                        } else {
+                            prefs.getString(
+                                PREF_OFF_MESSAGE_TEXT,
+                                context.getString(R.string.default_off_message)
+                            )
+                        }
                         "https://api.telegram.org/bot$telegramBotToken/sendMessage?chat_id=$telegramChatId&text=${
                             URLEncoder.encode(
                                 message,
                                 "UTF-8"
                             )
-                        }",
-                        insecure,
-                        prefs
-                    )
+                        }"
+                    }
+                    if (url != null) {
+                        sendChargerState(url, insecure, prefs)
+                    }
                 }
             }
             prefs.edit().putBoolean(PREF_WAS_CONNECTED, isConnected).apply()
@@ -88,6 +95,7 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                     return@Thread
                 }
                 val client = URL(url).openConnection() as HttpsURLConnection
+                var retryRequired = true
                 try {
                     client.defaultUseCaches = false
                     client.useCaches = false
@@ -113,25 +121,32 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                         "${client.responseCode} ${client.responseMessage}\n$responseBody"
                     ).apply()
                     thread = null
-                    break
+                    if (client.responseCode < 500) {
+                        retryRequired = false
+                    }
                 } catch (e: IOException) {
-                    delay = (INITIAL_RETRY_DELAY * 2.0.pow(attempt - 1))
-                        .coerceAtMost(MAX_RETRY_DELAY)
                     Log.d(
                         TAG,
-                        "Got an exception trying to send a request (attempt $attempt): ${e.message}. Retrying in ${delay.roundToLong()} ms",
+                        "Got an exception trying to send a request (attempt $attempt): ${e.message}.",
                         e
                     )
                     prefs.edit().putString(PREF_LAST_RESPONSE, e.stackTraceToString()).apply()
+                } catch (_: InterruptedIOException) {
+                } finally {
+                    client.disconnect()
+                }
+                if (retryRequired) {
+                    delay = (INITIAL_RETRY_DELAY * 2.0.pow(attempt - 1))
+                        .coerceAtMost(MAX_RETRY_DELAY)
+                    Log.d(TAG, "Retrying in ${delay.roundToLong()} ms.")
                     try {
                         Thread.sleep(delay.roundToLong())
                     } catch (ie: InterruptedException) {
                         Log.d(TAG, "Retry interrupted")
                         return@Thread
                     }
-                } catch (_: InterruptedIOException) {
-                } finally {
-                    client.disconnect()
+                } else {
+                    break
                 }
             }
         }
@@ -144,6 +159,9 @@ class PowerNotifierReceiver : BroadcastReceiver() {
         const val MAX_RETRY_DELAY = 32000.0
         const val PREF_INSECURE = "insecure"
         const val PREF_ENABLED = "enabled"
+        const val PREF_CUSTOM = "custom"
+        const val PREF_CUSTOM_URL_ON = "custom_url_on"
+        const val PREF_CUSTOM_URL_OFF = "custom_url_off"
         const val PREF_TELEGRAM_BOT_TOKEN = "telegram_bot_token"
         const val PREF_TELEGRAM_CHAT_ID = "telegram_chat_id"
         const val PREF_WAS_CONNECTED = "was_connected"
