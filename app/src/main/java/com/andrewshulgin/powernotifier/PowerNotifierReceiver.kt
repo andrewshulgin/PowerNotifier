@@ -71,7 +71,7 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                             )
                         }"
                     }
-                    if (url != null) {
+                    if (!url.isNullOrBlank()) {
                         sendChargerState(url, insecure, prefs)
                     }
                 }
