@@ -41,6 +41,17 @@ class PowerNotifierReceiver : BroadcastReceiver() {
             )
             ContextCompat.startForegroundService(context, serviceIntent)
         }
+        if (intent.action in setOf(
+                Intent.ACTION_BOOT_COMPLETED,
+                Intent.ACTION_MY_PACKAGE_REPLACED
+            ) && enabled
+        ) {
+            val serviceIntent = Intent(
+                context,
+                PowerNotifierService::class.java
+            )
+            ContextCompat.startForegroundService(context, serviceIntent)
+        }
         if (intent.action == Intent.ACTION_BATTERY_CHANGED && enabled) {
             val isConnected = intent.getIntExtra(
                 BatteryManager.EXTRA_PLUGGED, -1
