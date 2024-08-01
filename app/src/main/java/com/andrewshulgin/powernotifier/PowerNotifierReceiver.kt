@@ -34,15 +34,9 @@ class PowerNotifierReceiver : BroadcastReceiver() {
         val custom = prefs.getBoolean(PREF_CUSTOM, false)
         val telegramBotToken = prefs.getString(PREF_TELEGRAM_BOT_TOKEN, "")
         val telegramChatId = prefs.getString(PREF_TELEGRAM_CHAT_ID, "")
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED && enabled) {
-            val serviceIntent = Intent(
-                context,
-                PowerNotifierService::class.java
-            )
-            ContextCompat.startForegroundService(context, serviceIntent)
-        }
         if (intent.action in setOf(
                 Intent.ACTION_BOOT_COMPLETED,
+                Intent.ACTION_LOCKED_BOOT_COMPLETED,
                 Intent.ACTION_MY_PACKAGE_REPLACED
             ) && enabled
         ) {
@@ -50,7 +44,11 @@ class PowerNotifierReceiver : BroadcastReceiver() {
                 context,
                 PowerNotifierService::class.java
             )
-            ContextCompat.startForegroundService(context, serviceIntent)
+            try {
+                ContextCompat.startForegroundService(context, serviceIntent)
+            } catch (e: Exception) {
+                Log.e(TAG, e.message, e)
+            }
         }
         if (intent.action == Intent.ACTION_BATTERY_CHANGED && enabled) {
             val isConnected = intent.getIntExtra(
