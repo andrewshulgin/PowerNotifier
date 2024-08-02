@@ -1,13 +1,19 @@
 package io.hex128.powernotifier
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.PermissionChecker
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Switch
@@ -42,13 +48,19 @@ class MainActivity : Activity() {
         }
     }
 
+    private var notificationPermissionWarningLayout: LinearLayout? = null
+    private var notificationPermissionWarningButton: Button? = null
+    private var enableSwitch: Switch? = null
     private var lastResponseTextView: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val enableSwitch = findViewById<Switch>(R.id.enableSwitch)
+        notificationPermissionWarningLayout = findViewById(R.id.notificationPermissionWarningLayout)
+        notificationPermissionWarningButton = findViewById(R.id.notificationPermissionWarningButton)
+        enableSwitch = findViewById(R.id.enableSwitch)
+
         val insecureSwitch = findViewById<Switch>(R.id.insecureSwitch)
         val customSwitch = findViewById<Switch>(R.id.customSwitch)
         val telegramBotTokenEditText = findViewById<EditText>(R.id.telegramBotTokenEditText)
@@ -62,6 +74,23 @@ class MainActivity : Activity() {
         val customUrlInputsLayout = findViewById<LinearLayout>(R.id.customInputsLayout)
 
         lastResponseTextView = findViewById(R.id.lastResponse)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PermissionChecker.PERMISSION_GRANTED
+            ) {
+                notificationPermissionWarningLayout?.visibility = View.VISIBLE
+                enableSwitch?.isEnabled = false
+                prefs.edit().putBoolean(PowerNotifierReceiver.PREF_ENABLED, false).apply()
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_CODE
+                )
+            }
+        }
 
         val uiState = UiState(
             prefs.getBoolean(PowerNotifierReceiver.PREF_ENABLED, false),
@@ -90,7 +119,7 @@ class MainActivity : Activity() {
             customUrlInputsLayout.visibility = View.GONE
         }
 
-        enableSwitch.isChecked = uiState.enableSwitchChecked
+        enableSwitch?.isChecked = uiState.enableSwitchChecked
         insecureSwitch.isChecked = uiState.insecureSwitchChecked
         customSwitch.isChecked = uiState.customSwitchChecked
         telegramBotTokenEditText.setText(uiState.telegramBotToken)
@@ -103,7 +132,17 @@ class MainActivity : Activity() {
 
         prefs.registerOnSharedPreferenceChangeListener(listener)
 
-        enableSwitch.setOnCheckedChangeListener { _, isChecked ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            notificationPermissionWarningButton?.setOnClickListener { _ ->
+                val intent = Intent().apply {
+                    action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                }
+                startActivity(intent)
+            }
+        }
+
+        enableSwitch?.setOnCheckedChangeListener { _, isChecked ->
             with(prefs.edit()) {
                 if (isChecked) {
                     ContextCompat.startForegroundService(this@MainActivity, serviceIntent)
@@ -166,8 +205,30 @@ class MainActivity : Activity() {
             }
         }
 
-        if (enableSwitch.isChecked) {
+        if (enableSwitch!!.isChecked) {
             ContextCompat.startForegroundService(this, serviceIntent)
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            NOTIFICATION_PERMISSION_CODE -> {
+                if (
+                    grantResults.isNotEmpty() &&
+                    grantResults[0] == PermissionChecker.PERMISSION_GRANTED
+                ) {
+                    notificationPermissionWarningLayout?.visibility = View.GONE
+                    enableSwitch?.isEnabled = true
+                } else {
+                    notificationPermissionWarningLayout?.visibility = View.VISIBLE
+                    enableSwitch?.isEnabled = false
+                }
+            }
         }
     }
 
@@ -180,5 +241,23 @@ class MainActivity : Activity() {
         super.onResume()
         lastResponseTextView?.text = prefs.getString(PowerNotifierReceiver.PREF_LAST_RESPONSE, "")
         prefs.registerOnSharedPreferenceChangeListener(listener)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PermissionChecker.PERMISSION_GRANTED
+            ) {
+                notificationPermissionWarningLayout?.visibility = View.VISIBLE
+                enableSwitch?.isEnabled = false
+                prefs.edit().putBoolean(PowerNotifierReceiver.PREF_ENABLED, false).apply()
+            } else {
+                notificationPermissionWarningLayout?.visibility = View.GONE
+                enableSwitch?.isEnabled = true
+            }
+        }
+    }
+
+    companion object {
+        const val NOTIFICATION_PERMISSION_CODE = 101
     }
 }

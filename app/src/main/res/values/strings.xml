@@ -19,4 +19,6 @@
     <string name="preference_file_key" translatable="false">io.hex128.powernotifier.preferences</string>
     <string name="default_on_message">⚡️ Connected</string>
     <string name="default_off_message">🚫 Disconnected</string>
+    <string name="allow_notifications">Persistent notification required to keep the service running</string>
+    <string name="open_notification_settings">Open notification settings</string>
 </resources>

@@ -16,4 +16,6 @@
     <string name="custom">PRO режим (Произвольные URL)</string>
     <string name="custom_url_on">URL для включения</string>
     <string name="custom_url_off">URL для отключения</string>
+    <string name="allow_notifications">Для работы сервиса необходимо разрешение на отображение постоянного уведомления</string>
+    <string name="open_notification_settings">Открыть настройки уведомлений</string>
 </resources>

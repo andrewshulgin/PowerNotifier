@@ -16,4 +16,6 @@
     <string name="custom">PRO режим (Довільні URL)</string>
     <string name="custom_url_on">URL для увімкнення</string>
     <string name="custom_url_off">URL для вимкнення</string>
+    <string name="allow_notifications">Для роботи сервісу необхідний дозвіл на відображення постійного сповіщення</string>
+    <string name="open_notification_settings">Відкрити налаштування сповіщень</string>
 </resources>

@@ -16,12 +16,29 @@
             android:minHeight="48dp"
             android:text="@string/enable" />
 
-        <Switch
-            android:id="@+id/customSwitch"
+        <LinearLayout
+            android:id="@+id/notificationPermissionWarningLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="@string/custom" />
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="?android:attr/alertDialogIcon"
+                android:drawableStart="?android:attr/alertDialogIcon"
+                android:gravity="center"
+                android:text="@string/allow_notifications"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/notificationPermissionWarningButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/open_notification_settings" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/telegramInputsLayout"
@@ -100,6 +117,13 @@
                 android:minHeight="48dp" />
 
         </LinearLayout>
+
+        <Switch
+            android:id="@+id/customSwitch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:text="@string/custom" />
 
         <Switch
             android:id="@+id/insecureSwitch"
